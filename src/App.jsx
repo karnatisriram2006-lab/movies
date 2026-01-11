@@ -1,5 +1,5 @@
 import "./css/App.css";
-
+import "./css/index.css";
 import Home from "./pages/home";
 import Favourite from "./pages/favourites";
 import MovieDetail from "./pages/MovieDetail";
