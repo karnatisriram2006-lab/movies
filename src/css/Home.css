@@ -5,6 +5,7 @@
   margin: 0 auto;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
+  overflow: visible;
 }
 
 .movies-grid {
@@ -14,6 +15,7 @@
   padding: 0.5rem 0;
   width: 100%;
   box-sizing: border-box;
+ 
 }
 
 /* Filters bar */
