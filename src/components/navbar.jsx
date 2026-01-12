@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import React, { useState } from "react";
 import "../css/Navbar.css";
 import Search from "./Search";
@@ -30,21 +30,21 @@ function Navbar() {
       </div>
 
       <div id="navbar-links" className={`navbar-links ${open ? "open" : ""}`}>
-        <Link className="nav-link" to="/">
+        <NavLink className="nav-link" to="/">
           Home
-        </Link>
-        <Link className="nav-link" to="/movies">
+        </NavLink>
+        <NavLink className="nav-link" to="/movies">
           Movies
-        </Link>
-        <Link className="nav-link" to="/genres">
+        </NavLink>
+        <NavLink className="nav-link" to="/genres">
           Genres
-        </Link>
-        <Link className="nav-link" to="/top-rated">
+        </NavLink>
+        <NavLink className="nav-link" to="/top-rated">
           Top Rated
-        </Link>
-        <Link className="nav-link" to="/favourite">
+        </NavLink>
+        <NavLink className="nav-link" to="/favourite">
           Favourites
-        </Link>
+        </NavLink>
       </div>
     </nav>
   );

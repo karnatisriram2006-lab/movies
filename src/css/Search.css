@@ -1,6 +1,26 @@
+
 .search-wrapper { position: relative; display: flex; flex-direction: column; align-items: stretch; }
 .search-form { display:flex; gap:0.5rem; align-items:center; }
-.search-input { padding:0.4rem 0.6rem; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.22); color:#fff; flex:1; font-size:0.95rem; min-width:0; }
+.search-input { 
+  padding:0.4rem 0.6rem; 
+  border-radius:999px; 
+  border:1px solid rgba(255,255,255,0.06); 
+  background:rgba(0,0,0,0.22); 
+  color:#fff; 
+  flex:1; 
+  font-size:0.95rem; 
+  min-width:0;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.search-input::placeholder {
+  color: var(--muted);
+  opacity: 0.8;
+}
+.search-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
 .search-btn { background:transparent; border:none; color:#fff; cursor:pointer; font-size:0.95rem; padding:0.35rem; }
 .suggestions { position:absolute; left:0; right:0; top:calc(100% + 6px); background:rgba(10,12,14,0.98); border-radius:8px; box-shadow:var(--card-shadow); z-index:90; max-height:320px; overflow:auto; padding:0.25rem; }
 .suggestions li { display:flex; gap:0.6rem; padding:0.35rem; align-items:center; cursor:pointer; }
@@ -19,13 +39,8 @@
 
 @media (max-width: 420px) {
 	.search-wrapper { width: 100%; }
-	.suggestions { left: 0; right: 0; }
+	.suggestions { left: 0; right: 0; position: absolute; top: calc(100% + 4px); border-radius: 8px; padding: 0.25rem; }
 	.search-input { border-radius: 999px; }
-}
-
-/* On very small screens, make suggestions full width and visually separated */
-@media (max-width: 420px) {
-	.suggestions { position: absolute; left: 0; right: 0; top: calc(100% + 4px); border-radius: 8px; padding: 0.25rem; }
-	.suggestions li { padding: 0.5rem; gap: 0.5rem; }
+    .suggestions li { padding: 0.5rem; gap: 0.5rem; }
 	.suggest-meta .suggest-title { font-size: 0.98rem; }
 }

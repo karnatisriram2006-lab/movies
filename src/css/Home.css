@@ -1,5 +1,5 @@
 .home {
-  padding: 1rem 0;
+  padding: 80px 0 1rem;
   width: 100%;
   box-sizing: border-box;
   margin: 0 auto;
@@ -15,7 +15,7 @@
   padding: 0.5rem 0;
   width: 100%;
   box-sizing: border-box;
- 
+  margin-top: 1rem; /* Add margin to account for sticky filter bar */
 }
 
 /* Filters bar */
@@ -27,7 +27,14 @@
   justify-content: center;
   margin: 0 auto 1.25rem;
   max-width: 1100px;
-  padding: 0 1rem;
+  padding: 1rem;
+  background: rgba(26, 26, 26, 0.6);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  position: sticky;
+  top: 70px; /* Stick below the navbar */
+  z-index: 90;
 }
 
 .filter-item {
@@ -47,6 +54,33 @@
   border-radius: 8px;
   border: 1px solid rgba(255,255,255,0.06);
   background: rgba(0,0,0,0.25);
+  color: #fff;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.filter-item select {
+  appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em;
+  padding-right: 2.5rem;
+}
+
+.filter-item select:hover,
+.filter-item input:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.filter-item select:focus,
+.filter-item input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
+}
+
+.filter-item select option {
+  background: #1a1a1a;
   color: #fff;
 }
 
@@ -76,7 +110,7 @@
 
 @media (min-width: 900px) {
   .movies-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; }
-  .home { padding: 2rem 0; padding-left: 1rem; padding-right: 1rem; max-width: 1200px; }
+  .home { padding: 80px 1rem 2rem; max-width: 1200px; }
 }
 
 /* Extra small devices: single column for comfortable scrolling and larger touch targets */

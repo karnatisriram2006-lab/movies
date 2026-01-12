@@ -8,6 +8,7 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
 import { MovieProvider } from "./contexts/moviecontext";
 import LiveRegion from "./components/LiveRegion";
+
 function App() {
   return (
     <MovieProvider>
@@ -17,6 +18,9 @@ function App() {
         <div className="main-wrapper">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/movies" element={<Home />} />
+            <Route path="/genres" element={<Home />} />
+            <Route path="/top-rated" element={<Home />} />
             <Route path="/search" element={<SearchResults />} />
             <Route path="/movie/:id" element={<MovieDetail />} />
             <Route path="/favourite" element={<Favourite />} />

@@ -3,6 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
 import MovieCard from "../components/movieCard";
 import { useMovieContext } from "../contexts/moviecontext";
+import WatchProviders from "../components/WatchProviders";
+import Cast from "../components/Cast";
+import SimilarMovies from "../components/SimilarMovies";
 import "../css/MovieDetail.css";
 
 const minutesToHours = (m) => {
@@ -148,71 +151,7 @@ export default function MovieDetail() {
 
             <p className="overview">{movie.overview}</p>
 
-            {/* {trailer && (
-              <div className="trailer-preview" aria-hidden="true">
-                <img
-                  src={`https://img.youtube.com/vi/${trailer.key}/hqdefault.jpg`}
-                  alt="Trailer thumbnail"
-                />
-                <div className="trailer-play">▶</div>
-              </div>
-            )} */}
-
-            {providers && (
-              <div className="ott-section">
-                <h4>Available on</h4>
-                <div className="ott-list">
-                  {(() => {
-                    const results = providers.results || {};
-                    const lang = (navigator.language || "en-US").toUpperCase();
-                    const country = (lang.split("-")[1] || "US").toUpperCase();
-                    const region =
-                      results[country] || results[Object.keys(results)[0]];
-                    if (!region)
-                      return (
-                        <div className="ott-none">
-                          Not available on OTT platforms.
-                        </div>
-                      );
-                    const groups = [
-                      { key: "flatrate", label: "Streaming" },
-                      { key: "rent", label: "Rent" },
-                      { key: "buy", label: "Buy" },
-                      { key: "ads", label: "Free" },
-                    ];
-                    return groups.map((g) => {
-                      const list = region[g.key] || [];
-                      if (!list.length) return null;
-                      return (
-                        <div className="ott-group" key={g.key}>
-                          <div className="ott-group-label">{g.label}</div>
-                          <div className="ott-group-list">
-                            {list.map((p) => (
-                              <div
-                                className="ott-item"
-                                key={p.provider_id}
-                                title={p.provider_name}
-                              >
-                                {p.logo_path ? (
-                                  <img
-                                    src={`https://image.tmdb.org/t/p/w92${p.logo_path}`}
-                                    alt={p.provider_name}
-                                  />
-                                ) : (
-                                  <span className="ott-name">
-                                    {p.provider_name}
-                                  </span>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
-            )}
+            <WatchProviders providers={providers} />
 
             <div className="detail-actions">
               {trailer && (
@@ -239,37 +178,8 @@ export default function MovieDetail() {
         </div>
       </div>
 
-      <section className="detail-cast">
-        <h3>Top Cast</h3>
-        <div className="cast-grid">
-          {(movie.credits?.cast || []).slice(0, 8).map((c) => (
-            <div key={c.cast_id || c.credit_id} className="cast-item">
-              <img
-                src={
-                  c.profile_path
-                    ? `https://image.tmdb.org/t/p/w185${c.profile_path}`
-                    : "/avatar.png"
-                }
-                alt={c.name}
-                loading="lazy"
-              />
-              <div className="cast-meta">
-                <div className="cast-name">{c.name}</div>
-                <div className="cast-role">{c.character}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="detail-similar">
-        <h3>Similar Movies</h3>
-        <div className="movies-grid similar-grid">
-          {(movie.similar?.results || []).slice(0, 8).map((m) => (
-            <MovieCard movie={m} key={m.id} />
-          ))}
-        </div>
-      </section>
+      <Cast cast={movie.credits?.cast} />
+      <SimilarMovies movies={movie.similar?.results} />
 
       {showTrailer && trailer && (
         <div className="trailer-modal" role="dialog" aria-modal="true">
