@@ -1,62 +1,93 @@
-.favorites {
-  padding: 2rem 1rem;
-  width: 100%;
-  box-sizing: border-box;
-  max-width: 1200px;
-  margin: 0 auto;
+.favorites-page {
+  padding: 100px 4% 5rem 4%;
+  min-height: 100vh;
+  background-color: #141414;
 }
 
-.favorites h2 {
-  margin-bottom: 1.25rem;
-  text-align: center;
+.favorites-header {
+  margin-bottom: 2rem;
+}
+
+.favorites-header h1 {
+  color: #fff;
   font-size: 2rem;
-  color: #ffffff;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.35);
+  font-weight: 700;
+  margin: 0;
 }
 
-.favorites-empty {
-  text-align: center;
-  padding: 3rem 2rem;
-  background-color: rgba(255, 255, 255, 0.03);
-  border-radius: 12px;
-  margin: 2rem auto;
-  max-width: 680px;
-}
-
-.favorites-empty h2 {
-  margin-bottom: 0.75rem;
-  font-size: 1.8rem;
-  color: #e50914;
-}
-
-.favorites-empty p {
-  color: #bbb;
-  font-size: 1.05rem;
-  line-height: 1.6;
-}
-
-
-/* Animation for new favorites being added */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.movies-grid > * {
-  animation: fadeIn 0.28s ease-out forwards;
-}
-
-/* Center the grid and prevent single items from stretching */
-.movies-grid {
+.favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  justify-content: center;
-  justify-items: center;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.5rem;
+}
+
+.favorite-item {
+  position: relative;
+  border-radius: 4px;
+}
+
+/* Empty State */
+.favorites-empty {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #141414;
+  color: #fff;
+  text-align: center;
+  padding: 0 20px;
+}
+
+.empty-content {
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.empty-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  color: #e5e5e5;
+}
+
+.empty-subtitle {
+  font-size: 1.1rem;
+  color: #a3a3a3;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.empty-btn {
+  background-color: #e50914;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+
+.empty-btn:hover {
+  background-color: #b20710;
+}
+
+@media (max-width: 768px) {
+  .favorites-page {
+    padding-top: 80px;
+  }
+
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .empty-title {
+    font-size: 1.5rem;
+  }
 }

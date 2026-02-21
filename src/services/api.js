@@ -49,6 +49,16 @@ export const searchMovies = async (query, options = {}) => {
     return fetchJson(url);
 };
 
+export const getTrendingMovies = async (page = 1) => {
+    const url = buildUrl("/trending/movie/day", { page });
+    return fetchJson(url);
+};
+
+export const getUpcomingMovies = async (page = 1) => {
+    const url = buildUrl("/movie/upcoming", { page });
+    return fetchJson(url);
+};
+
 export const discoverMovies = async (filters = {}) => {
     // filters: { with_genres, primary_release_year, 'vote_average.gte', with_original_language, sort_by, page }
     const params = {
@@ -112,6 +122,8 @@ export const autoSuggest = async (query, limit = 5) => {
 
 export default {
     getPopularMovies,
+    getTrendingMovies,
+    getUpcomingMovies,
     getTopRatedMovies,
     searchMovies,
     discoverMovies,

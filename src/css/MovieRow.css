@@ -1,0 +1,80 @@
+.movie-row {
+    margin: 2rem 0;
+    padding-left: 4rem;
+}
+
+.movie-row-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #e5e5e5;
+    margin-bottom: 1rem;
+}
+
+.movie-row-posters {
+    display: flex;
+    overflow-y: hidden;
+    overflow-x: scroll;
+    padding: 1rem 0;
+    gap: 0.5rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.movie-row-posters::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar for Chrome, Safari and Opera */
+}
+
+.movie-row-card {
+    flex: 0 0 auto;
+    width: 200px;
+    /* Reduced width for row layout */
+    transition: transform 450ms;
+}
+
+.movie-row-card:hover {
+    transform: scale(1.08);
+    opacity: 1;
+    z-index: 10;
+}
+
+@media (max-width: 768px) {
+    .movie-row {
+        padding-left: 1rem;
+    }
+
+    .movie-row-card {
+        width: 140px;
+    }
+}
+
+@media (hover: none) {
+    .movie-row-card:hover {
+        transform: none;
+        z-index: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .movie-row {
+        padding-left: 0.5rem;
+        margin: 1rem 0;
+    }
+
+    .movie-row-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        padding-left: 0.5rem;
+    }
+
+    .movie-row-posters {
+        gap: 0.3rem;
+        -webkit-overflow-scrolling: touch;
+        /* Enable smooth scrolling on iOS */
+        padding: 0.5rem 0;
+    }
+
+    .movie-row-card {
+        width: 105px;
+    }
+}

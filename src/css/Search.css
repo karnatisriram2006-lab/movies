@@ -1,31 +1,169 @@
-.search-wrapper { position: relative; display: flex; flex-direction: column; align-items: stretch; }
-.search-form { display:flex; gap:0.5rem; align-items:center; }
-.search-input { padding:0.4rem 0.6rem; border-radius:999px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.22); color:#fff; flex:1; font-size:0.95rem; min-width:0; }
-.search-btn { background:transparent; border:none; color:#fff; cursor:pointer; font-size:0.95rem; padding:0.35rem; }
-.suggestions { position:absolute; left:0; right:0; top:calc(100% + 6px); background:rgba(10,12,14,0.98); border-radius:8px; box-shadow:var(--card-shadow); z-index:90; max-height:320px; overflow:auto; padding:0.25rem; }
-.suggestions li { display:flex; gap:0.6rem; padding:0.35rem; align-items:center; cursor:pointer; }
-.suggestions li.active { background:rgba(255,255,255,0.03); }
-.suggestions img{ width:44px; height:66px; object-fit:cover; border-radius:4px }
-.suggest-meta .suggest-title{ font-weight:600; color:#fff }
-.suggest-meta .suggest-sub{ color:var(--muted); font-size:0.9rem }
-.search-loading{ position:absolute; right:3.5rem; top:50%; transform:translateY(-50%); font-size:0.85rem; color:var(--muted) }
+.search-wrapper {
+	position: relative;
+}
+
+.search-form {
+	display: flex;
+	align-items: center;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: 0;
+	transition: all 0.3s ease;
+	overflow: hidden;
+}
+
+.search-wrapper.expanded .search-form {
+	background: rgba(0, 0, 0, 0.7);
+	border: 1px solid rgba(255, 255, 255, 0.8);
+	border-radius: 4px;
+}
+
+.search-btn {
+	background: transparent;
+	border: none;
+	color: #fff;
+	cursor: pointer;
+	padding: 0.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.search-btn svg {
+	width: 20px;
+	height: 20px;
+	stroke: #fff;
+	transition: stroke 0.3s ease;
+}
+
+.search-wrapper.expanded .search-btn svg {
+	stroke: #e50914;
+}
+
+.search-input {
+	border: none;
+	background: transparent;
+	color: #fff;
+	font-size: 0.95rem;
+	width: 0;
+	padding: 0;
+	opacity: 0;
+	transition: width 0.4s ease, padding 0.4s ease, opacity 0.4s ease;
+}
+
+.search-input:focus {
+	outline: none;
+}
+
+.search-input.active {
+	width: 200px;
+	padding: 0.5rem 0.5rem 0.5rem 0;
+	opacity: 1;
+}
+
+.suggestions {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 8px);
+	background: #141414;
+	/* Solid dark Netflix background instead of blur */
+	border-radius: 4px;
+	/* Sharper corners */
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	/* Slightly more visible border */
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
+	z-index: 100;
+	max-height: 400px;
+	width: 320px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	padding: 0;
+	/* Remove padding for edge-to-edge items */
+}
+
+/* Custom scrollbar for suggestions */
+.suggestions::-webkit-scrollbar {
+	width: 8px;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+	background: rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.suggestions li {
+	display: flex;
+	gap: 1rem;
+	padding: 0.8rem 1rem;
+	align-items: center;
+	cursor: pointer;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	transition: background 0.2s, padding-left 0.2s;
+}
+
+.suggestions li:last-child {
+	border-bottom: none;
+}
+
+.suggestions li:hover,
+.suggestions li.active {
+	background: rgba(255, 255, 255, 0.1);
+	padding-left: 1.2rem;
+	/* Add subtle indent on hover */
+}
+
+.suggestions img {
+	width: 44px;
+	height: 66px;
+	object-fit: cover;
+	border-radius: 4px;
+}
+
+.suggest-meta .suggest-title {
+	font-weight: 600;
+	color: #fff;
+	font-size: 0.95rem;
+}
+
+.suggest-meta .suggest-sub {
+	color: #a3a3a3;
+	font-size: 0.85rem;
+}
+
+.search-loading {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 6px);
+	font-size: 0.85rem;
+	color: #a3a3a3;
+	background: rgba(0, 0, 0, 0.9);
+	padding: 0.5rem 1rem;
+	border-radius: 4px;
+}
 
 @media (max-width: 600px) {
-	.search-form { gap: 0.4rem; }
-	.search-input { padding: 0.35rem 0.5rem; font-size:0.92rem; }
-	.search-btn { font-size:0.9rem; }
-	.suggestions img { width:40px; height:60px; }
+	.search-input.active {
+		width: 150px;
+	}
+
+	.suggestions {
+		width: 100vw;
+		left: auto;
+		right: -50px;
+	}
 }
 
 @media (max-width: 420px) {
-	.search-wrapper { width: 100%; }
-	.suggestions { left: 0; right: 0; }
-	.search-input { border-radius: 999px; }
-}
+	.search-input.active {
+		width: 120px;
+	}
 
-/* On very small screens, make suggestions full width and visually separated */
-@media (max-width: 420px) {
-	.suggestions { position: absolute; left: 0; right: 0; top: calc(100% + 4px); border-radius: 8px; padding: 0.25rem; }
-	.suggestions li { padding: 0.5rem; gap: 0.5rem; }
-	.suggest-meta .suggest-title { font-size: 0.98rem; }
+	.suggestions {
+		right: -20px;
+		width: 90vw;
+	}
 }
