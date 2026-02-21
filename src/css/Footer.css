@@ -1,0 +1,27 @@
+.app-footer {
+  padding: 2rem 1rem;
+  text-align: center;
+  background-color: #050a0f;
+  color: #a9a9a9;
+  margin-top: auto;
+}
+
+.tmdb-attribution {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.8rem;
+}
+
+.tmdb-logo {
+  width: 120px;
+  height: auto;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.tmdb-logo:hover {
+  opacity: 1;
+}
