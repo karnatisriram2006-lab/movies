@@ -39,13 +39,13 @@ function Navbar() {
           <Link className="nav-link" to="/" onClick={() => setOpen(false)}>
             Home
           </Link>
-          <Link className="nav-link" to="/movies" onClick={() => setOpen(false)}>
+          <Link className="nav-link" to="/" onClick={() => setOpen(false)}>
             TV Shows
           </Link>
-          <Link className="nav-link" to="/genres" onClick={() => setOpen(false)}>
+          <Link className="nav-link" to="/" onClick={() => setOpen(false)}>
             Movies
           </Link>
-          <Link className="nav-link" to="/top-rated" onClick={() => setOpen(false)}>
+          <Link className="nav-link" to="/" onClick={() => setOpen(false)}>
             New & Popular
           </Link>
           <Link className="nav-link" to="/favourite" onClick={() => setOpen(false)}>
@@ -67,4 +67,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

@@ -1,4 +1,3 @@
-console.log("VITE_TMDB_API_KEY:", import.meta.env.VITE_TMDB_API_KEY);
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
