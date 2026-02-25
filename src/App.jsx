@@ -6,7 +6,6 @@ import MovieDetail from "./pages/MovieDetail";
 import SearchResults from "./pages/SearchResults";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
-import Footer from "./components/Footer"; // Import Footer
 import { MovieProvider } from "./contexts/moviecontext";
 import LiveRegion from "./components/LiveRegion";
 
@@ -26,7 +25,6 @@ function App() {
             </Routes>
           </div>
         </main>
-        <Footer />
       </div>
     </MovieProvider>
   );
