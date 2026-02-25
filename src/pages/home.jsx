@@ -63,6 +63,21 @@ function Home() {
 
   if (loading) return <div className="loading-screen">Loading...</div>;
 
+  if (error) return (
+    <div className="error-screen">
+      <div className="error-content">
+        <h2>⚠️ Something went wrong</h2>
+        <p>{error}</p>
+        <p style={{ fontSize: "0.9rem", opacity: 0.7 }}>
+          This may be a network issue or the movie service is temporarily unavailable. Please try again.
+        </p>
+        <button className="retry-btn" onClick={() => window.location.reload()}>
+          🔄 Try Again
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="home-netflix">
       <Hero movie={heroMovie} />
@@ -73,12 +88,6 @@ function Home() {
         <MovieRow title="Top Rated" movies={topRated} />
         <MovieRow title="Upcoming Releases" movies={upcoming} />
       </div>
-
-      {error && (
-        <div className="error-message" role="alert">
-          {error}
-        </div>
-      )}
     </div>
   );
 }

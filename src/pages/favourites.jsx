@@ -1,6 +1,6 @@
 import "../css/favourites.css";
 import { useMovieContext } from "../contexts/moviecontext";
-import MovieCard from "../components/movieCard";
+import MovieCard from "../components/MovieCard";
 
 export default function Favourite() {
   const { favorites } = useMovieContext();
