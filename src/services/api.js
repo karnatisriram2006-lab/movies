@@ -104,17 +104,27 @@ export const getMovieWatchProviders = async (movieId) => {
 
 export const getGenres = async () => {
     const cacheKey = "tmdb_genres";
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-        try {
+    
+    // Check for cached genres safely
+    try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
             return JSON.parse(cached);
-        } catch (e) {
-            localStorage.removeItem(cacheKey);
         }
+    } catch (e) {
+        console.warn("localStorage access denied for getting genres:", e);
     }
+
     const url = buildUrl('/genre/movie/list');
     const data = await fetchJson(url);
-    localStorage.setItem(cacheKey, JSON.stringify(data));
+
+    // Cache genres safely
+    try {
+        localStorage.setItem(cacheKey, JSON.stringify(data));
+    } catch (e) {
+        console.warn("localStorage access denied for saving genres:", e);
+    }
+
     return data;
 };
 

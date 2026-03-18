@@ -10,11 +10,22 @@ export const useMovieContext = () => useContext(MovieContext);
 export const MovieProvider = ({ children }) => {
   const [favorites, setfavorites] = useState([]);
   useEffect(() => {
-    const storedfavs = localStorage.getItem("favorites");
-    if (storedfavs) setfavorites(JSON.parse(storedfavs));
+    try {
+      const storedfavs = localStorage.getItem("favorites");
+      if (storedfavs) {
+        setfavorites(JSON.parse(storedfavs));
+      }
+    } catch (e) {
+      console.warn("localStorage access denied for getting favorites:", e);
+    }
   }, []);
+
   useEffect(() => {
-    localStorage.setItem("favorites", JSON.stringify(favorites));
+    try {
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+    } catch (e) {
+      console.warn("localStorage access denied for saving favorites:", e);
+    }
   }, [favorites]);
   const addtofavs = (movie) => {
     setfavorites((prev) => [...prev, movie]);
