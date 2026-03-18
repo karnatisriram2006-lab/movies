@@ -146,3 +146,38 @@
     gap: 0.5rem;
   }
 }
+
+/* --- Search & Collections Grid --- */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 4%;
+}
+
+.movies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 2rem 1.25rem;
+  padding: 2rem 0;
+}
+
+@media (max-width: 1024px) {
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .movies-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 1rem 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movies-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem 0.6rem;
+  }
+}
