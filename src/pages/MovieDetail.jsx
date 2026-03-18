@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import api from "../services/api";
+import api, { getMovieImageUrl } from "../services/api";
 import MovieCard from "../components/movieCard";
 import { SkeletonHero } from "../components/SkeletonLoader";
+import SEO from "../components/SEO";
 import { useMovieContext } from "../contexts/moviecontext";
 import "../css/MovieDetail.css";
 
@@ -27,12 +28,13 @@ export default function MovieDetail() {
     let mounted = true;
     const load = async () => {
       setLoading(true);
+      setError(null);
       try {
         const data = await api.getMovieDetails(id);
         if (mounted) setMovie(data);
       } catch (e) {
         console.error("movie details error", e);
-        if (mounted) setError("Failed to load movie details.");
+        if (mounted) setError("Failed to load movie details. Please try again later.");
       } finally {
         if (mounted) setLoading(false);
       }
@@ -107,6 +109,11 @@ export default function MovieDetail() {
 
   return (
     <div className="movie-detail-immersive">
+      <SEO 
+        title={movie.title} 
+        description={movie.overview} 
+        image={getMovieImageUrl(movie.backdrop_path, "w1280")} 
+      />
       {/* Background Layer: Trailer or Backdrop */}
       <div className="immersive-backdrop">
         {trailer && showTrailer ? (

@@ -128,6 +128,11 @@ export const getGenres = async () => {
     return data;
 };
 
+export const getMovieImageUrl = (path, size = "w500") => {
+    if (!path) return "/placeholder-poster.png";
+    return `https://image.tmdb.org/t/p/${size}${path}`;
+};
+
 export const autoSuggest = async (query, limit = 5) => {
     if (!query || query.length < 2) return [];
     const data = await searchMovies(query, { page: 1 });
@@ -152,4 +157,5 @@ export default {
     getGenres,
     autoSuggest,
     getMovieWatchProviders,
-};
+    getMovieImageUrl,
+};
