@@ -1,7 +1,10 @@
 export default async function handler(req, res) {
   const { path, ...params } = req.query;
 
+  console.log("API Function Called:", { path, params });
+
   if (!path) {
+    console.error("Error: Missing path parameter");
     return res.status(400).json({ error: "Missing 'path' query parameter" });
   }
 
@@ -9,7 +12,11 @@ export default async function handler(req, res) {
   const BASE_URL = "https://api.themoviedb.org/3";
 
   if (!API_KEY) {
-    return res.status(500).json({ error: "TMDB_API_KEY is not configured on the server" });
+    console.error("Error: TMDB_API_KEY not found in process.env");
+    return res.status(500).json({ 
+      error: "TMDB_API_KEY is not configured on the server",
+      tip: "Please check Vercel Project Settings > Environment Variables"
+    });
   }
 
   try {
@@ -20,10 +27,22 @@ export default async function handler(req, res) {
       url.searchParams.set(key, params[key]);
     });
 
-    const response = await fetch(url.toString());
+    console.log("Fetching from TMDB:", url.toString().replace(API_KEY, "HIDDEN"));
+
+    const response = await fetch(url.toString(), {
+        headers: {
+            "Accept": "application/json",
+            "User-Agent": "Vercel-Serverless-Function"
+        }
+    });
     
     if (!response.ok) {
       const errorText = await response.text();
+      console.error("TMDB API Error Response:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+      });
       return res.status(response.status).json({ 
         error: `TMDB API error: ${response.statusText}`,
         details: errorText 
@@ -33,7 +52,11 @@ export default async function handler(req, res) {
     const data = await response.json();
     return res.status(200).json(data);
   } catch (error) {
-    console.error("Serverless Function Error:", error);
-    return res.status(500).json({ error: "Internal Server Error", message: error.message });
+    console.error("Serverless Function Runtime Error:", error);
+    return res.status(500).json({ 
+        error: "Internal Server Error", 
+        message: error.message,
+        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+    });
   }
 }
