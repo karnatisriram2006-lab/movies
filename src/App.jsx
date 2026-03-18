@@ -1,7 +1,7 @@
 import "./css/App.css";
 import "./css/index.css";
 import Home from "./pages/home";
-import Favourite from "./pages/favourites";
+import Favorite from "./pages/favorites";
 import MovieDetail from "./pages/MovieDetail";
 import SearchResults from "./pages/SearchResults";
 import { Routes, Route } from "react-router-dom";
@@ -21,7 +21,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<SearchResults />} />
               <Route path="/movie/:id" element={<MovieDetail />} />
-              <Route path="/favourite" element={<Favourite />} />
+              <Route path="/favorites" element={<Favorite />} />
             </Routes>
           </div>
         </main>

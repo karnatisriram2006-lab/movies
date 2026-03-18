@@ -3,18 +3,18 @@
    ========================================= */
 
 .hero {
-    height: 80vh;
+    height: 85vh;
     width: 100%;
     background-size: cover;
     background-position: center top;
     display: flex;
     align-items: flex-end;
     /* content sits at bottom */
-    padding: 0 4rem 3.5rem;
-    /* no top padding, side + bottom only */
+    padding: 100px 4rem 3.5rem;
+    /* 100px top padding to clear fixed navbar */
     color: #fff;
     position: relative;
-    margin-top: -80px;
+    margin-top: -70px; /* Pull background under transparent navbar */
     overflow: hidden;
     box-sizing: border-box;
     animation: hero-breathe 25s infinite alternate ease-in-out;
@@ -207,8 +207,8 @@
 
 @media (max-width: 768px) {
     .hero {
-        height: 70vh;
-        padding: 0 1.25rem 2.5rem;
+        height: 75vh;
+        padding: 80px 1.25rem 2.5rem;
         margin-top: -60px;
     }
 

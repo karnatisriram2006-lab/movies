@@ -165,7 +165,7 @@
    FAVORITE BUTTON
    ========================================= */
 
-.favorite-btn {
+.favorite-btn{
   position: absolute;
   top: 10px;
   right: 10px;
@@ -187,6 +187,15 @@
 
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+
+  /* Hidden by default, slides in on hover */
+  opacity: 0;
+  transform: scale(0.6) translateY(-10px);
+}
+
+.movie-card:hover .favorite-btn {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 
 .favorite-btn:hover {
