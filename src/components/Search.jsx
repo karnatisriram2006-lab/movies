@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import useDebounce from "../hooks/useDebounce";
 import "../css/Search.css";
 
 export default function Search({
@@ -11,34 +12,35 @@ export default function Search({
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const debounceRef = useRef(null);
+  const debouncedQuery = useDebounce(query, 300);
   const navigate = useNavigate();
   const listRef = useRef(null);
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (!query || query.length < 2) {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
       setSuggestions([]);
       setLoading(false);
       setActiveIndex(-1);
       return;
     }
-    setLoading(true);
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        const items = await api.autoSuggest(query, max);
-        setSuggestions(items);
-        if (window.announce)
-          window.announce(`${items.length} suggestions for ${query}`);
-      } catch (e) {
-        setSuggestions([]);
-      } finally {
-        setLoading(false);
-      }
-    }, 220);
-    return () => clearTimeout(debounceRef.current);
-  }, [query]);
+
+    const fetchSuggestions = async () => {
+        setLoading(true);
+        try {
+          const items = await api.autoSuggest(debouncedQuery, max);
+          setSuggestions(items);
+          if (window.announce)
+            window.announce(`${items.length} suggestions for ${debouncedQuery}`);
+        } catch (e) {
+          setSuggestions([]);
+        } finally {
+          setLoading(false);
+        }
+    };
+
+    fetchSuggestions();
+  }, [debouncedQuery, max]);
 
   const open = (movie) => {
     setQuery("");
