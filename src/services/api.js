@@ -1,13 +1,24 @@
+const BASE_URL = "/api/movies";
+const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const BASE_URL = import.meta.env.VITE_TMDB_BASE_URL || "https://api.themoviedb.org/3";
-
-if (!API_KEY) {
-    console.warn("VITE_TMDB_API_KEY is not set. API requests may fail.");
-}
 
 const buildUrl = (path, params = {}) => {
-    const url = new URL(`${BASE_URL}${path}`);
-    url.searchParams.set("api_key", API_KEY);
+    // In development (Vite), we hit TMDB directly if the serverless proxy isn't available
+    if (import.meta.env.DEV) {
+        const url = new URL(`${TMDB_BASE_URL}${path}`);
+        url.searchParams.set("api_key", API_KEY);
+        Object.keys(params).forEach((key) => {
+            const val = params[key];
+            if (val !== undefined && val !== null && val !== "") {
+                url.searchParams.set(key, val);
+            }
+        });
+        return url.toString();
+    }
+
+    // In production (Vercel), we use the serverless function proxy
+    const url = new URL(window.location.origin + BASE_URL);
+    url.searchParams.set("path", path);
     Object.keys(params).forEach((key) => {
         const val = params[key];
         if (val !== undefined && val !== null && val !== "") {
@@ -20,16 +31,15 @@ const buildUrl = (path, params = {}) => {
 const fetchJson = async (url) => {
     const res = await fetch(url);
     if (!res.ok) {
-        const text = await res.text().catch(() => "");
-        throw new Error(`Request failed ${res.status} ${res.statusText} ${text}`);
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `Request failed ${res.status} ${res.statusText}`);
     }
     return res.json();
 };
 
 export const getPopularMovies = async (page = 1) => {
     const url = buildUrl("/movie/popular", { page });
-    const data = await fetchJson(url);
-    return data;
+    return fetchJson(url);
 };
 
 export const getTopRatedMovies = async (page = 1) => {
@@ -40,7 +50,7 @@ export const getTopRatedMovies = async (page = 1) => {
 export const searchMovies = async (query, options = {}) => {
     if (!query) return { results: [], total_pages: 0, page: 1 };
     const params = {
-        query: encodeURIComponent(query),
+        query: query,
         page: options.page || 1,
         include_adult: options.include_adult ? "true" : "false",
         language: options.language || undefined,
@@ -60,7 +70,6 @@ export const getUpcomingMovies = async (page = 1) => {
 };
 
 export const discoverMovies = async (filters = {}) => {
-    // filters: { with_genres, primary_release_year, 'vote_average.gte', with_original_language, sort_by, page }
     const params = {
         page: filters.page || 1,
         with_genres: filters.genre || filters.with_genres,
@@ -133,4 +142,4 @@ export default {
     getGenres,
     autoSuggest,
     getMovieWatchProviders,
-};
+};

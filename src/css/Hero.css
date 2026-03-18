@@ -95,6 +95,7 @@
 .play-btn:hover {
     background-color: rgba(255, 255, 255, 0.85);
     transform: scale(1.04);
+    cursor: pointer;
 }
 
 .info-btn {
@@ -107,6 +108,7 @@
 .info-btn:hover {
     background-color: rgba(109, 109, 110, 0.9);
     transform: scale(1.04);
+    cursor: pointer;
 }
 
 /* =========================================

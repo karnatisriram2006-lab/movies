@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import api from "../services/api";
 import MovieCard from "../components/movieCard";
+import { SkeletonHero } from "../components/SkeletonLoader";
 import { useMovieContext } from "../contexts/moviecontext";
 import "../css/MovieDetail.css";
 
@@ -65,23 +66,22 @@ export default function MovieDetail() {
 
   if (loading) {
     return (
-      <div className="movie-detail">
-        <div className="detail-hero skeleton-hero">
-          <div className="skeleton-poster" />
-          <div className="skeleton-meta">
-            <div className="skeleton-line" />
-            <div className="skeleton-line short" />
-            <div className="skeleton-line" />
-          </div>
-        </div>
+      <div className="movie-detail-immersive">
+        <SkeletonHero />
       </div>
     );
   }
 
   if (error)
     return (
-      <div className="error-message" role="alert">
-        {error}
+      <div className="error-screen" style={{ height: "100vh" }}>
+        <div className="error-content">
+          <h2>⚠️ Navigation Error</h2>
+          <p>{error}</p>
+          <Link to="/" className="retry-btn" style={{ textDecoration: "none", display: "inline-block" }}>
+            🏠 Back to Home
+          </Link>
+        </div>
       </div>
     );
 

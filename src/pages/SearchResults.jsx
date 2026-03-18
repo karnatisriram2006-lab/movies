@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import MovieCard from "../components/movieCard";
+import { SkeletonCard } from "../components/SkeletonLoader";
 import "../css/Home.css";
 import { searchMovies } from "../services/api";
 
@@ -37,33 +38,34 @@ export default function SearchResults() {
 
   return (
     <div className="home">
-      <h2>Search results for "{q}"</h2>
-      {error && (
-        <div className="error-message" role="alert">
-          {error}
-        </div>
-      )}
-      {loading ? (
-        <div className="movies-grid">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div className="movie-card skeleton" key={`s-${i}`}>
-              <div className="movie-poster">
-                <div className="skeleton-poster" />
-              </div>
-              <div className="movie-info">
-                <div className="skeleton-line short" />
-                <div className="skeleton-line" />
-              </div>
+      <div className="container">
+        <h2 style={{ margin: "20px 0", padding: "0 2%" }}>Search results for "{q}"</h2>
+        
+        {error ? (
+          <div className="error-screen" style={{ height: "50vh" }}>
+            <div className="error-content">
+              <h2>⚠️ Search Error</h2>
+              <p>{error}</p>
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="movies-grid">
-          {movies.map((m) => (
-            <MovieCard movie={m} key={m.id} />
-          ))}
-        </div>
-      )}
+          </div>
+        ) : loading ? (
+          <div className="movies-grid">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        ) : movies.length > 0 ? (
+          <div className="movies-grid">
+            {movies.map((m) => (
+              <MovieCard movie={m} key={m.id} />
+            ))}
+          </div>
+        ) : (
+          <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "#888" }}>
+             <p>No movies found for "{q}". Try a different search term.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
