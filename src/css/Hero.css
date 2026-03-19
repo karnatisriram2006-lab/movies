@@ -191,8 +191,8 @@
 
 @media (max-width: 768px) {
     .hero {
-        height: 75vh;
-        padding: 80px 1.25rem 2.5rem;
+        height: 60vh;
+        padding: 80px 4% 2.5rem;
         margin-top: -60px;
     }
 
@@ -202,7 +202,7 @@
     }
 
     .hero-title {
-        font-size: 1.9rem;
+        font-size: 1.8rem;
         margin-bottom: 0.6rem;
     }
 
@@ -218,8 +218,8 @@
     }
 
     .hero-btn {
-        padding: 0.65rem 1rem;
-        font-size: 0.9rem;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85rem;
         flex: 1;
         border-radius: 5px;
     }
@@ -235,32 +235,32 @@
 
 @media (max-width: 420px) {
     .hero {
-        height: 65vh;
-        padding: 0 0.9rem 2rem;
-        margin-top: -60px;
+        height: 50vh;
+        padding: 60px 4% 2rem;
+        margin-top: -50px;
     }
 
     .hero-title {
-        font-size: 1.55rem;
+        font-size: 1.4rem;
         margin-bottom: 0.5rem;
         line-height: 1.2;
     }
 
     .hero-overview {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
         margin-bottom: 1rem;
         -webkit-line-clamp: 2;
         line-clamp: 2;
     }
 
     .hero-btn {
-        padding: 0.6rem 0.7rem;
-        font-size: 0.82rem;
-        gap: 0.3rem;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.8rem;
+        gap: 0.25rem;
     }
 
     .hero-btn svg {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
     }
 }
