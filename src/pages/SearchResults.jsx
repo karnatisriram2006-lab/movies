@@ -1,17 +1,19 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import MovieCard from "../components/movieCard";
 import { SkeletonCard } from "../components/SkeletonLoader";
 import SEO from "../components/SEO";
 import "../css/Home.css";
-import { searchMovies } from "../services/api";
+import { searchMovies, searchPerson } from "../services/api";
 
 export default function SearchResults() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const q = params.get("q") || "";
   
+  const [activeTab, setActiveTab] = useState("movies");
   const [movies, setMovies] = useState([]);
+  const [people, setPeople] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
@@ -30,18 +32,18 @@ export default function SearchResults() {
     if (node) observer.current.observe(node);
   }, [loading, loadingMore, hasMore]);
 
-  // Handle new search/query
   useEffect(() => {
     setMovies([]);
+    setPeople([]);
     setPage(1);
     setHasMore(true);
     setError(null);
   }, [q]);
 
-  // Fetch data when page or query changes
   useEffect(() => {
     if (!q) {
       setMovies([]);
+      setPeople([]);
       setLoading(false);
       return;
     }
@@ -51,11 +53,16 @@ export default function SearchResults() {
       else setLoadingMore(true);
 
       try {
-        const data = await searchMovies(q, { page });
-        const newMovies = data.results || [];
-        
-        setMovies(prev => page === 1 ? newMovies : [...prev, ...newMovies]);
-        setHasMore(newMovies.length > 0 && data.page < data.total_pages);
+        if (activeTab === "movies") {
+          const data = await searchMovies(q, { page });
+          const newMovies = data.results || [];
+          setMovies(prev => page === 1 ? newMovies : [...prev, ...newMovies]);
+          setHasMore(newMovies.length > 0 && data.page < data.total_pages);
+        } else if (activeTab === "people") {
+          const data = await searchPerson(q, { page });
+          setPeople(data.results || []);
+          setHasMore(false);
+        }
       } catch (e) {
         console.error("Search error:", e);
         setError("Failed to fetch search results. Please try again.");
@@ -66,18 +73,35 @@ export default function SearchResults() {
     };
 
     fetchResults();
-  }, [q, page]);
+  }, [q, page, activeTab]);
+
+  const tabs = [
+    { id: "movies", label: "Movies & TV" },
+    { id: "people", label: "People" }
+  ];
 
   return (
     <div className="home">
       <SEO title={`Search: ${q}`} description={`Search results for ${q}`} />
-      <div className="container">
-        <h2 style={{ margin: "20px 0", padding: "0 2%" }}>Search results for "{q}"</h2>
+      <div className="search-header">
+        <h2>Search results for "{q}"</h2>
+        <div className="search-tabs">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              className={`search-tab ${activeTab === tab.id ? "active" : ""}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      </div>
         
         {error ? (
           <div className="error-screen" style={{ height: "50vh" }}>
             <div className="error-content">
-              <h2>⚠️ Search Error</h2>
+              <h2>Search Error</h2>
               <p>{error}</p>
             </div>
           </div>
@@ -87,35 +111,67 @@ export default function SearchResults() {
               <SkeletonCard key={i} />
             ))}
           </div>
-        ) : movies.length > 0 ? (
-          <>
-            <div className="movies-grid">
-              {movies.map((m, index) => {
-                if (movies.length === index + 1) {
-                  return (
-                    <div ref={lastMovieElementRef} key={m.id}>
-                      <MovieCard movie={m} />
-                    </div>
-                  );
-                } else {
-                  return <MovieCard movie={m} key={m.id} />;
-                }
-              })}
-            </div>
-            {loadingMore && (
-              <div className="movies-grid" style={{ marginTop: "20px" }}>
-                 {Array.from({ length: 4 }).map((_, i) => (
-                  <SkeletonCard key={`more-${i}`} />
-                ))}
+        ) : activeTab === "movies" ? (
+          movies.length > 0 ? (
+            <>
+              <div className="movies-grid">
+                {movies.map((m, index) => {
+                  if (movies.length === index + 1) {
+                    return (
+                      <div ref={lastMovieElementRef} key={m.id}>
+                        <MovieCard movie={m} />
+                      </div>
+                    );
+                  } else {
+                    return <MovieCard movie={m} key={m.id} />;
+                  }
+                })}
               </div>
-            )}
-          </>
+              {loadingMore && (
+                <div className="movies-grid" style={{ marginTop: "20px" }}>
+                   {Array.from({ length: 4 }).map((_, i) => (
+                    <SkeletonCard key={`more-${i}`} />
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "var(--muted)" }}>
+               <p>No movies or TV shows found for "{q}". Try a different search term.</p>
+            </div>
+          )
         ) : (
-          <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "#888" }}>
-             <p>No movies found for "{q}". Try a different search term.</p>
-          </div>
+          people.length > 0 ? (
+            <div className="people-grid">
+              {people.map((person) => (
+                <Link to={`/person/${person.id}`} key={person.id} className="person-card">
+                  <div className="person-avatar">
+                    {person.profile_path ? (
+                      <img src={`https://image.tmdb.org/t/p/w185${person.profile_path}`} alt={person.name} />
+                    ) : (
+                      <div className="no-avatar">👤</div>
+                    )}
+                  </div>
+                  <div className="person-details">
+                    <h3>{person.name}</h3>
+                    <p>{person.known_for_department}</p>
+                    <div className="known-for">
+                      {(person.known_for || []).slice(0, 3).map((item, i) => (
+                        <span key={i} className="known-item">
+                          {item.title || item.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "var(--muted)" }}>
+               <p>No people found for "{q}". Try a different search term.</p>
+            </div>
+          )
         )}
-      </div>
     </div>
   );
 }

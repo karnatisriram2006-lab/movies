@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import { searchMulti, searchPerson } from "../services/api";
 import useDebounce from "../hooks/useDebounce";
 import "../css/Search.css";
 
 export default function Search({
-  placeholder = "Search movies, e.g. Inception",
-  max = 6,
+  placeholder = "Search movies, TV shows, people...",
 }) {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState([]);
@@ -28,11 +27,24 @@ export default function Search({
     const fetchSuggestions = async () => {
         setLoading(true);
         try {
-          const items = await api.autoSuggest(debouncedQuery, max);
-          setSuggestions(items);
+          const [multiData, personData] = await Promise.all([
+            searchMulti(debouncedQuery, { page: 1 }),
+            searchPerson(debouncedQuery, { page: 1 })
+          ]);
+          
+          const movies = (multiData.results || [])
+            .filter(r => r.media_type === "movie" || r.media_type === "tv")
+            .slice(0, 4);
+          
+          const people = (personData.results || [])
+            .filter(p => p.known_for_department === "Acting" || p.known_for_department === "Directing")
+            .slice(0, 2)
+            .map(p => ({ ...p, media_type: "person" }));
+          
+          setSuggestions([...movies, ...people]);
           if (window.announce)
-            window.announce(`${items.length} suggestions for ${debouncedQuery}`);
-        } catch (e) {
+            window.announce(`${movies.length + people.length} suggestions for ${debouncedQuery}`);
+        } catch {
           setSuggestions([]);
         } finally {
           setLoading(false);
@@ -40,12 +52,16 @@ export default function Search({
     };
 
     fetchSuggestions();
-  }, [debouncedQuery, max]);
+  }, [debouncedQuery]);
 
-  const open = (movie) => {
+  const open = (item) => {
     setQuery("");
     setSuggestions([]);
-    navigate(`/movie/${movie.id}`);
+    if (item.media_type === "person") {
+      navigate(`/person/${item.id}`);
+    } else {
+      navigate(`/${item.media_type || "movie"}/${item.id}`);
+    }
   };
 
   const submit = (e) => {
@@ -61,17 +77,15 @@ export default function Search({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setActiveIndex((i) => Math.min(i + 1, suggestions.length - 1));
-      listRef.current
-        ?.querySelectorAll("li")
-        [Math.min(activeIndex + 1, suggestions.length - 1)]?.scrollIntoView({
-          block: "nearest",
-        });
+      const items = listRef.current?.querySelectorAll("li");
+      const idx = Math.min(activeIndex + 1, suggestions.length - 1);
+      items?.[idx]?.scrollIntoView({ block: "nearest" });
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setActiveIndex((i) => Math.max(i - 1, 0));
-      listRef.current
-        ?.querySelectorAll("li")
-        [Math.max(activeIndex - 1, 0)]?.scrollIntoView({ block: "nearest" });
+      const items = listRef.current?.querySelectorAll("li");
+      const idx = Math.max(activeIndex - 1, 0);
+      items?.[idx]?.scrollIntoView({ block: "nearest" });
     } else if (e.key === "Enter") {
       if (activeIndex >= 0 && suggestions[activeIndex]) {
         open(suggestions[activeIndex]);
@@ -154,18 +168,39 @@ export default function Search({
               className={activeIndex === idx ? "active" : ""}
               onMouseDown={() => open(s)}
             >
-              <img
-                src={
-                  s.poster_path
-                    ? `https://image.tmdb.org/t/p/w92${s.poster_path}`
-                    : ""
-                }
-                alt={`Poster for ${s.title}`}
-              />
-              <div className="suggest-meta">
-                <div className="suggest-title">{s.title}</div>
-                <div className="suggest-sub">{s.release_date}</div>
-              </div>
+              {s.media_type === "person" ? (
+                <div className="person-suggest">
+                  <div className="suggest-avatar">
+                    {s.profile_path ? (
+                      <img src={`https://image.tmdb.org/t/p/w92${s.profile_path}`} alt={s.name} />
+                    ) : (
+                      <span>👤</span>
+                    )}
+                  </div>
+                  <div className="suggest-meta">
+                    <div className="suggest-title">{s.name}</div>
+                    <div className="suggest-sub">Person</div>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <img
+                    src={
+                      s.poster_path || s.profile_path
+                        ? `https://image.tmdb.org/t/p/w92${s.poster_path || s.profile_path}`
+                        : ""
+                    }
+                    alt={`Poster for ${s.title || s.name}`}
+                  />
+                  <div className="suggest-meta">
+                    <div className="suggest-title">{s.title || s.name}</div>
+                    <div className="suggest-sub">
+                      {s.release_date || s.first_air_date || ""} 
+                      {s.media_type && <span className="media-type-badge">{s.media_type}</span>}
+                    </div>
+                  </div>
+                </>
+              )}
             </li>
           ))}
         </ul>

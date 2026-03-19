@@ -1,30 +1,36 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getMovieVideos } from "../services/api";
 import "../css/Hero.css";
 
-function Hero({ movie }) {
+function Hero({ movie, mediaType = "movie" }) {
   const navigate = useNavigate();
   const [trailerKey, setTrailerKey] = useState(null);
   const [showTrailer, setShowTrailer] = useState(false);
-  const [loadingTrailer, setLoadingTrailer] = useState(false);
+  const mountedRef = useRef(true);
+  const movieRef = useRef(movie);
 
-  // Pre-fetch trailer key whenever movie changes
   useEffect(() => {
+    movieRef.current = movie;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTrailerKey(null);
     if (!movie?.id) return;
-    getMovieVideos(movie.id)
+    
+    const endpoint = mediaType === "tv" ? `/tv/${movie.id}/videos` : `/movie/${movie.id}/videos`;
+    fetch(`https://api.themoviedb.org/3${endpoint}?api_key=${import.meta.env.VITE_TMDB_API_KEY}`)
+      .then(res => res.json())
       .then((data) => {
+        if (!mountedRef.current) return;
         const videos = data.results || [];
         const trailer =
           videos.find((v) => v.type === "Trailer" && v.site === "YouTube") ||
           videos.find((v) => v.site === "YouTube");
-        if (trailer) setTrailerKey(trailer.key);
+        if (trailer && mountedRef.current) setTrailerKey(trailer.key);
       })
       .catch(() => {});
-  }, [movie?.id]);
+      
+    return () => { mountedRef.current = false; };
+  }, [movie?.id, mediaType]);
 
-  // Close on Escape key
   const handleKeyDown = useCallback((e) => {
     if (e.key === "Escape") setShowTrailer(false);
   }, []);
@@ -46,27 +52,26 @@ function Hero({ movie }) {
   if (!movie) return null;
 
   const backdropUrl = `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
+  const title = movie.title || movie.name;
 
   const handlePlay = () => {
     if (trailerKey) {
       setShowTrailer(true);
     } else {
-      // Fallback: go to movie detail if no trailer found
-      navigate(`/movie/${movie.id}`);
+      navigate(`/${mediaType}/${movie.id}`);
     }
   };
 
   return (
     <>
-      {/* ── Hero Banner ── */}
       <div
         className="hero"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(20,20,20,1) 100%), url(${backdropUrl})`,
+          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%), url(${backdropUrl})`,
         }}
       >
         <div className="hero-content">
-          <h1 className="hero-title">{movie.title || movie.name}</h1>
+          <h1 className="hero-title">{title}</h1>
           <p className="hero-overview">{movie.overview}</p>
           <div className="hero-buttons">
             <button className="hero-btn play-btn" onClick={handlePlay}>
@@ -77,7 +82,7 @@ function Hero({ movie }) {
             </button>
             <button
               className="hero-btn info-btn"
-              onClick={() => navigate(`/movie/${movie.id}`)}
+              onClick={() => navigate(`/${mediaType}/${movie.id}`)}
             >
               <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
                 <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="2"/>
@@ -90,14 +95,13 @@ function Hero({ movie }) {
         </div>
       </div>
 
-      {/* ── Trailer Modal ── */}
       {showTrailer && trailerKey && (
         <div
           className="trailer-modal-overlay"
           onClick={() => setShowTrailer(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Movie Trailer"
+          aria-label="Trailer"
         >
           <div
             className="trailer-modal-content"
@@ -113,7 +117,7 @@ function Hero({ movie }) {
             <div className="trailer-iframe-wrapper">
               <iframe
                 src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&rel=0`}
-                title="Movie Trailer"
+                title="Trailer"
                 allow="autoplay; encrypted-media"
                 allowFullScreen
               />

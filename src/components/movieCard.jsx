@@ -14,16 +14,22 @@ function MovieCard({ movie }) {
     else addtofavs(movie);
   }
 
-  const openDetail = () => navigate(`/movie/${movie.id}`);
+  const openDetail = () => {
+    const mediaType = movie.media_type || (movie.first_air_date ? "tv" : "movie");
+    navigate(`/${mediaType}/${movie.id}`);
+  };
+  
   const handleKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") openDetail();
   };
+
+  const rating = movie.vote_average ? movie.vote_average.toFixed(1) : null;
 
   return (
     <div
       className="movie-card"
       role="button"
-      aria-label={`Open ${movie.title}`}
+      aria-label={`Open ${movie.title || movie.name}`}
       tabIndex={0}
       onClick={openDetail}
       onKeyDown={handleKeyDown}
@@ -35,7 +41,7 @@ function MovieCard({ movie }) {
               ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
               : "/placeholder-poster.png"
           }
-          alt={movie.title}
+          alt={movie.title || movie.name}
           loading="lazy"
         />
       </div>
@@ -59,11 +65,16 @@ function MovieCard({ movie }) {
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       </button>
+      {rating && (
+        <div className="movie-rating">
+          ★ {rating}
+        </div>
+      )}
       <div className="movie-overlay">
       </div>
       <div className="movie-info">
-        <h3>{movie.title}</h3>
-        <p>{movie.release_date ? movie.release_date.split("-")[0] : "—"}</p>
+        <h3>{movie.title || movie.name}</h3>
+        <p>{movie.release_date ? movie.release_date.split("-")[0] : movie.first_air_date ? movie.first_air_date.split("-")[0] : "—"}</p>
       </div>
     </div>
   );

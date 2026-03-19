@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import api, { getMovieImageUrl } from "../services/api";
+import api, { getMovieImageUrl, getTVDetails } from "../services/api";
 import MovieCard from "../components/movieCard";
 import { SkeletonHero } from "../components/SkeletonLoader";
 import SEO from "../components/SEO";
@@ -14,9 +14,9 @@ const minutesToHours = (m) => {
   return `${h}h ${mins}m`;
 };
 
-export default function MovieDetail() {
+export default function MovieDetail({ mediaType = "movie" }) {
   const { id } = useParams();
-  const [movie, setMovie] = useState(null);
+  const [item, setItem] = useState(null);
   const [providers, setProviders] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -30,27 +30,29 @@ export default function MovieDetail() {
       setLoading(true);
       setError(null);
       try {
-        const data = await api.getMovieDetails(id);
-        if (mounted) setMovie(data);
+        const data = mediaType === "tv" 
+          ? await getTVDetails(id)
+          : await api.getMovieDetails(id);
+        if (mounted) setItem(data);
       } catch (e) {
-        console.error("movie details error", e);
-        if (mounted) setError("Failed to load movie details. Please try again later.");
+        console.error("details error", e);
+        if (mounted) setError("Failed to load details. Please try again later.");
       } finally {
         if (mounted) setLoading(false);
       }
 
-      // fetch providers separately; don't block main details
-      try {
-        const prov = await api.getMovieWatchProviders(id);
-        if (mounted) setProviders(prov || null);
-      } catch (e) {
-        console.warn("Failed to load watch providers", e);
-        if (mounted) setProviders(null);
+      if (mediaType === "movie") {
+        try {
+          const prov = await api.getMovieWatchProviders(id);
+          if (mounted) setProviders(prov || null);
+        } catch (e) {
+          console.warn("Failed to load watch providers", e);
+        }
       }
     };
     load();
     return () => (mounted = false);
-  }, [id]);
+  }, [id, mediaType]);
 
   useEffect(() => {
     if (showTrailer && modalCloseRef.current) {
@@ -78,43 +80,49 @@ export default function MovieDetail() {
     return (
       <div className="error-screen" style={{ height: "100vh" }}>
         <div className="error-content">
-          <h2>⚠️ Navigation Error</h2>
+          <h2>Navigation Error</h2>
           <p>{error}</p>
           <Link to="/" className="retry-btn" style={{ textDecoration: "none", display: "inline-block" }}>
-            🏠 Back to Home
+            Back to Home
           </Link>
         </div>
       </div>
     );
 
-  if (!movie) return null;
+  if (!item) return null;
 
-  const backdrop = movie.backdrop_path
-    ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}`
+  const title = item.title || item.name;
+  const releaseDate = item.release_date || item.first_air_date;
+  const runtime = item.runtime || item.episode_run_time?.[0];
+  const overview = item.overview;
+  const tagline = item.tagline;
+  const status = item.status;
+  const voteAverage = item.vote_average;
+
+  const backdrop = item.backdrop_path
+    ? `https://image.tmdb.org/t/p/original${item.backdrop_path}`
     : null;
 
-  const poster = movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+  const poster = item.poster_path
+    ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
     : "/placeholder-poster.png";
 
-  const videos = movie.videos?.results || [];
+  const videos = item.videos?.results || [];
   let trailer = videos.find((v) => v.type === "Trailer" && v.site === "YouTube");
   
   if (!trailer) {
-    // Fallback: look for Teasers, then anything from YouTube
     trailer = videos.find((v) => v.type === "Teaser" && v.site === "YouTube") || 
               videos.find((v) => v.site === "YouTube");
   }
-  const fav = isfavs(movie.id);
+  const fav = isfavs(item.id);
 
   return (
     <div className="movie-detail-immersive">
       <SEO 
-        title={movie.title} 
-        description={movie.overview} 
-        image={getMovieImageUrl(movie.backdrop_path, "w1280")} 
+        title={title} 
+        description={overview} 
+        image={getMovieImageUrl(item.backdrop_path, "w1280")} 
       />
-      {/* Background Layer: Trailer or Backdrop */}
       <div className="immersive-backdrop">
         {trailer && showTrailer ? (
           <div className="trailer-background">
@@ -138,23 +146,23 @@ export default function MovieDetail() {
       <div className="immersive-content container">
         <div className="header-section">
           <div className="poster-container">
-            <img src={poster} alt={movie.title} className="floating-poster" />
+            <img src={poster} alt={title} className="floating-poster" />
             <div className="poster-actions">
                <button
                 className={`fav-action ${fav ? "active" : ""}`}
-                onClick={() => fav ? removefromfavs(movie.id) : addtofavs(movie)}
+                onClick={() => fav ? removefromfavs(item.id) : addtofavs(item)}
               >
-                {fav ? "❤️ In Favorites" : "🤍 Add to List"}
+                {fav ? "In Favorites" : "Add to List"}
               </button>
             </div>
           </div>
 
           <div className="meta-container">
-            <h1 className="movie-title-large">{movie.title}</h1>
-            <p className="tagline-shine">{movie.tagline}</p>
+            <h1 className="movie-title-large">{title}</h1>
+            {tagline && <p className="tagline-shine">{tagline}</p>}
             
             <div className="genres-container">
-              {(movie.genres || []).map((g) => (
+              {(item.genres || []).map((g) => (
                 <span key={g.id} className="immersive-genre-pill">
                   {g.name}
                 </span>
@@ -162,25 +170,41 @@ export default function MovieDetail() {
             </div>
             
             <div className="info-cards">
-              <div className="info-card">
-                <span className="label">Release</span>
-                <span className="value">{new Date(movie.release_date).getFullYear()}</span>
-              </div>
-              <div className="info-card">
-                <span className="label">Runtime</span>
-                <span className="value">{minutesToHours(movie.runtime)}</span>
-              </div>
+              {releaseDate && (
+                <div className="info-card">
+                  <span className="label">{mediaType === "tv" ? "First Air" : "Release"}</span>
+                  <span className="value">{new Date(releaseDate).getFullYear()}</span>
+                </div>
+              )}
+              {runtime && (
+                <div className="info-card">
+                  <span className="label">{mediaType === "tv" ? "Episode" : "Runtime"}</span>
+                  <span className="value">{mediaType === "tv" ? `${runtime} min` : minutesToHours(runtime)}</span>
+                </div>
+              )}
               <div className="info-card">
                 <span className="label">Rating</span>
-                <span className="value">⭐ {movie.vote_average?.toFixed(1)}</span>
+                <span className="value">⭐ {voteAverage?.toFixed(1)}</span>
               </div>
               <div className="info-card">
                 <span className="label">Status</span>
-                <span className="value">{movie.status}</span>
+                <span className="value">{status}</span>
               </div>
+              {mediaType === "tv" && item.number_of_seasons && (
+                <div className="info-card">
+                  <span className="label">Seasons</span>
+                  <span className="value">{item.number_of_seasons}</span>
+                </div>
+              )}
+              {mediaType === "tv" && item.number_of_episodes && (
+                <div className="info-card">
+                  <span className="label">Episodes</span>
+                  <span className="value">{item.number_of_episodes}</span>
+                </div>
+              )}
             </div>
 
-            <p className="immersive-overview">{movie.overview}</p>
+            <p className="immersive-overview">{overview}</p>
 
             <div className="primary-actions">
               {trailer && (
@@ -188,12 +212,12 @@ export default function MovieDetail() {
                   className="action-btn premiere-btn"
                   onClick={() => setShowTrailer(!showTrailer)}
                 >
-                  {showTrailer ? "🛑 Stop Trailer" : "🎥 Play Trailer"}
+                  {showTrailer ? "Stop Trailer" : "Play Trailer"}
                 </button>
               )}
-              {movie.homepage && (
+              {item.homepage && (
                 <a 
-                  href={movie.homepage} 
+                  href={item.homepage} 
                   target="_blank" 
                   rel="noreferrer" 
                   className="action-btn secondary-btn"
@@ -231,8 +255,8 @@ export default function MovieDetail() {
         <section className="immersive-section">
           <h3 className="section-title">The Cast</h3>
           <div className="cast-carousel">
-            {(movie.credits?.cast || []).slice(0, 12).map((c) => (
-              <div key={c.id} className="cast-card">
+            {(item.credits?.cast || []).slice(0, 12).map((c) => (
+              <Link to={`/person/${c.id}`} key={c.id} className="cast-card">
                 <div className="cast-img-wrapper">
                   <img
                     src={c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : "/avatar.png"}
@@ -241,19 +265,19 @@ export default function MovieDetail() {
                 </div>
                 <div className="cast-info">
                   <span className="c-name">{c.name}</span>
-                  <span className="c-role">{c.character}</span>
+                  <span className="c-role">{c.character || c.roles?.[0]?.character}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </section>
 
         <section className="immersive-section">
-          <h3 className="section-title">Similar Experience</h3>
+          <h3 className="section-title">{mediaType === "tv" ? "Similar Shows" : "Similar Experience"}</h3>
           <div className="similar-carousel">
-            {(movie.similar?.results || []).slice(0, 10).map((m) => (
+            {(item.similar?.results || []).slice(0, 10).map((m) => (
               <div key={m.id} className="similar-card-wrapper">
-                <MovieCard movie={m} />
+                <MovieCard movie={{...m, media_type: mediaType}} />
               </div>
             ))}
           </div>

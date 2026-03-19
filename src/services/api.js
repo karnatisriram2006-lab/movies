@@ -3,7 +3,6 @@ const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
 const buildUrl = (path, params = {}) => {
-    // In development (Vite), we hit TMDB directly if the serverless proxy isn't available
     if (import.meta.env.DEV) {
         const url = new URL(`${TMDB_BASE_URL}${path}`);
         url.searchParams.set("api_key", API_KEY);
@@ -16,7 +15,6 @@ const buildUrl = (path, params = {}) => {
         return url.toString();
     }
 
-    // In production (Vercel), we use the serverless function proxy
     const url = new URL(window.location.origin + BASE_URL);
     url.searchParams.set("path", path);
     Object.keys(params).forEach((key) => {
@@ -59,8 +57,8 @@ export const searchMovies = async (query, options = {}) => {
     return fetchJson(url);
 };
 
-export const getTrendingMovies = async (page = 1) => {
-    const url = buildUrl("/trending/movie/day", { page });
+export const getTrendingMovies = async (page = 1, mediaType = "movie") => {
+    const url = buildUrl(`/trending/${mediaType}/day`, { page });
     return fetchJson(url);
 };
 
@@ -102,23 +100,18 @@ export const getMovieWatchProviders = async (movieId) => {
     return fetchJson(url);
 };
 
-export const getGenres = async () => {
-    const cacheKey = "tmdb_genres";
-    
-    // Check for cached genres safely
+export const getGenres = async (mediaType = "movie") => {
+    const cacheKey = `tmdb_genres_${mediaType}`;
     try {
         const cached = localStorage.getItem(cacheKey);
-        if (cached) {
-            return JSON.parse(cached);
-        }
+        if (cached) return JSON.parse(cached);
     } catch (e) {
         console.warn("localStorage access denied for getting genres:", e);
     }
 
-    const url = buildUrl('/genre/movie/list');
+    const url = buildUrl(`/genre/${mediaType}/list`);
     const data = await fetchJson(url);
 
-    // Cache genres safely
     try {
         localStorage.setItem(cacheKey, JSON.stringify(data));
     } catch (e) {
@@ -141,7 +134,63 @@ export const autoSuggest = async (query, limit = 5) => {
         title: m.title,
         poster_path: m.poster_path,
         release_date: m.release_date,
+        media_type: "movie",
     }));
+};
+
+export const searchMulti = async (query, options = {}) => {
+    if (!query) return { results: [], total_pages: 0, page: 1 };
+    const params = {
+        query: query,
+        page: options.page || 1,
+        include_adult: options.include_adult ? "true" : "false",
+    };
+    const url = buildUrl("/search/multi", params);
+    return fetchJson(url);
+};
+
+export const searchPerson = async (query, options = {}) => {
+    if (!query) return { results: [], total_pages: 0, page: 1 };
+    const params = {
+        query: query,
+        page: options.page || 1,
+    };
+    const url = buildUrl("/search/person", params);
+    return fetchJson(url);
+};
+
+export const getPersonDetails = async (personId) => {
+    const url = buildUrl(`/person/${personId}`, { append_to_response: "movie_credits,tv_credits" });
+    return fetchJson(url);
+};
+
+export const getPopularTV = async (page = 1) => {
+    const url = buildUrl("/tv/popular", { page });
+    return fetchJson(url);
+};
+
+export const getTopRatedTV = async (page = 1) => {
+    const url = buildUrl("/tv/top_rated", { page });
+    return fetchJson(url);
+};
+
+export const getTrendingTV = async (page = 1) => {
+    const url = buildUrl("/trending/tv/day", { page });
+    return fetchJson(url);
+};
+
+export const getOnTheAirTV = async (page = 1) => {
+    const url = buildUrl("/tv/on_the_air", { page });
+    return fetchJson(url);
+};
+
+export const getTVDetails = async (tvId) => {
+    const url = buildUrl(`/tv/${tvId}`, { append_to_response: "videos,credits,similar" });
+    return fetchJson(url);
+};
+
+export const getTVGenres = async () => {
+    return getGenres("tv");
 };
 
 export default {
@@ -158,4 +207,13 @@ export default {
     autoSuggest,
     getMovieWatchProviders,
     getMovieImageUrl,
+    searchMulti,
+    searchPerson,
+    getPersonDetails,
+    getPopularTV,
+    getTopRatedTV,
+    getTrendingTV,
+    getOnTheAirTV,
+    getTVDetails,
+    getTVGenres,
 };

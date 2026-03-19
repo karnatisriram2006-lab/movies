@@ -8,6 +8,7 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing 'path' query parameter" });
   }
 
+  // eslint-disable-next-line no-undef
   const API_KEY = process.env.TMDB_API_KEY;
   const BASE_URL = "https://api.themoviedb.org/3";
 
@@ -53,10 +54,12 @@ export default async function handler(req, res) {
     return res.status(200).json(data);
   } catch (error) {
     console.error("Serverless Function Runtime Error:", error);
+    // eslint-disable-next-line no-undef
+    const isDev = process.env.NODE_ENV === "development";
     return res.status(500).json({ 
         error: "Internal Server Error", 
         message: error.message,
-        stack: process.env.NODE_ENV === "development" ? error.stack : undefined
+        stack: isDev ? error.stack : undefined
     });
   }
 }

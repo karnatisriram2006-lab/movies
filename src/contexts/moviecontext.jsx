@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import {
   createContext,
   useState,
@@ -13,6 +14,7 @@ export const MovieProvider = ({ children }) => {
     try {
       const storedfavs = localStorage.getItem("favorites");
       if (storedfavs) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setfavorites(JSON.parse(storedfavs));
       }
     } catch (e) {

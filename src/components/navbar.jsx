@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import "../css/Navbar.css";
 import Search from "./Search";
@@ -15,7 +15,6 @@ function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Close menu when clicking outside (on overlay/links)
   const closeMenu = () => setOpen(false);
 
   return (
@@ -66,7 +65,6 @@ function Navbar() {
         </div>
       </nav>
       
-      {/* Mobile Backdrop */}
       {open && <div className="nav-backdrop" onClick={closeMenu}></div>}
     </>
   );
