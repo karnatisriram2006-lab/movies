@@ -2,7 +2,8 @@
     height: 85vh;
     width: 100%;
     background-size: cover;
-    background-position: center top;
+    background-position: center center;
+    background-repeat: no-repeat;
     display: flex;
     align-items: flex-end;
     padding: 100px 4rem 3.5rem;
@@ -16,7 +17,7 @@
 
 @keyframes hero-breathe {
     0% {
-        background-position: center top;
+        background-position: center center;
     }
 
     100% {
@@ -191,9 +192,12 @@
 
 @media (max-width: 768px) {
     .hero {
-        height: 60vh;
+        height: 70vh;
+        min-height: 400px;
         padding: 80px 4% 2.5rem;
         margin-top: -60px;
+        background-size: cover;
+        background-position: center top;
     }
 
     .hero-content {
@@ -233,11 +237,14 @@
     }
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
     .hero {
-        height: 50vh;
-        padding: 60px 4% 2rem;
+        height: 60vh;
+        min-height: 350px;
+        padding: 60px 4% 1.5rem;
         margin-top: -50px;
+        background-size: cover;
+        background-position: center top;
     }
 
     .hero-title {
@@ -254,9 +261,9 @@
     }
 
     .hero-btn {
-        padding: 0.5rem 0.6rem;
+        padding: 0.5rem 0.5rem;
         font-size: 0.8rem;
-        gap: 0.25rem;
+        gap: 0.2rem;
     }
 
     .hero-btn svg {
