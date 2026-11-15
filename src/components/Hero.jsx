@@ -1,34 +1,33 @@
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import "../css/Hero.css";
 
 function Hero({ movie, mediaType = "movie" }) {
   const navigate = useNavigate();
-  const [trailerKey, setTrailerKey] = useState(null);
+  const [trailer, setTrailer] = useState({ movieId: null, key: null });
   const [showTrailer, setShowTrailer] = useState(false);
-  const mountedRef = useRef(true);
-  const movieRef = useRef(movie);
-
+  const trailerKey = trailer.movieId === movie?.id ? trailer.key : null;
   useEffect(() => {
-    movieRef.current = movie;
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTrailerKey(null);
     if (!movie?.id) return;
-    
+
+    const controller = new AbortController();
     const endpoint = mediaType === "tv" ? `/tv/${movie.id}/videos` : `/movie/${movie.id}/videos`;
-    fetch(`https://api.themoviedb.org/3${endpoint}?api_key=${import.meta.env.VITE_TMDB_API_KEY}`)
+    const proxyBase = import.meta.env.DEV ? '/tmdb-proxy' : '/api/movies';
+    const query = new URLSearchParams({ path: endpoint });
+    fetch(`${proxyBase}?${query}`, { signal: controller.signal })
       .then(res => res.json())
       .then((data) => {
-        if (!mountedRef.current) return;
         const videos = data.results || [];
         const trailer =
           videos.find((v) => v.type === "Trailer" && v.site === "YouTube") ||
           videos.find((v) => v.site === "YouTube");
-        if (trailer && mountedRef.current) setTrailerKey(trailer.key);
+        setTrailer({ movieId: movie.id, key: trailer?.key || null });
       })
-      .catch(() => {});
-      
-    return () => { mountedRef.current = false; };
+      .catch((error) => {
+        if (error.name !== "AbortError") setTrailer({ movieId: movie.id, key: null });
+      });
+
+    return () => controller.abort();
   }, [movie?.id, mediaType]);
 
   const handleKeyDown = useCallback((e) => {
@@ -51,7 +50,7 @@ function Hero({ movie, mediaType = "movie" }) {
 
   if (!movie) return null;
 
-  const backdropUrl = `https://image.tmdb.org/t/p/original${movie.backdrop_path}`;
+  const backdropUrl = movie.backdrop_path ? `https://image.tmdb.org/t/p/original${movie.backdrop_path}` : null;
   const title = movie.title || movie.name;
 
   const handlePlay = () => {
@@ -67,7 +66,9 @@ function Hero({ movie, mediaType = "movie" }) {
       <div
         className="hero"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%), url(${backdropUrl})`,
+          backgroundImage: backdropUrl
+            ? `linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%), url(${backdropUrl})`
+            : "linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, var(--bg) 100%)",
         }}
       >
         <div className="hero-content">

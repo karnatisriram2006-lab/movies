@@ -75,6 +75,17 @@
   min-width: 130px;
 }
 
+.filter-group input {
+  width: 120px;
+  min-height: 36px;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(42, 42, 42, 1);
+  color: #fff;
+  font: inherit;
+}
+
 .filter-group select:focus {
   outline: none;
   border-color: var(--accent);
@@ -103,6 +114,86 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 2rem 1.25rem;
+}
+
+.virtualized-grid .virtual-grid-spacer {
+  grid-column: 1 / -1;
+  width: 100%;
+  pointer-events: none;
+}
+
+.virtualized-grid .movie-card {
+  content-visibility: visible;
+  contain-intrinsic-size: none;
+}
+
+.filtered-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0 4%;
+}
+
+.active-filter-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-chip {
+  min-height: 34px;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  color: #fff;
+  background: #252525;
+  font-size: 0.8rem;
+}
+
+.clear-filters-btn {
+  min-height: 36px;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  background: transparent;
+  color: #fff;
+}
+
+.clear-filters-btn:hover,
+.filter-chip:hover {
+  border-color: var(--accent);
+  background: rgba(229, 9, 20, 0.18);
+}
+
+.load-more-sentinel {
+  height: 1px;
+  width: 100%;
+}
+
+.results-status,
+.results-error {
+  margin: 1.25rem 4%;
+  color: var(--muted);
+}
+
+.results-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  color: #ffc4c4;
+}
+
+.movies-filters-bar {
+  margin-top: -70px;
+  margin-bottom: 1.5rem;
+}
+
+.movies-filters-bar .filters-panel {
+  margin-top: 0;
 }
 
 .rows-container {
@@ -213,6 +304,10 @@
     width: 100%;
     min-width: auto;
   }
+
+  .filter-group input {
+    width: 100%;
+  }
   
   .rows-container {
     margin-top: 1.5rem;
@@ -241,6 +336,21 @@
   
   .filter-group select {
     flex: 1;
+  }
+
+  .filtered-heading-row {
+    align-items: flex-start;
+    padding: 0 1rem;
+  }
+
+  .filtered-grid,
+  .movies-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.8rem 0.6rem;
+  }
+
+  .movies-filters-bar {
+    margin-top: -50px;
   }
   
   .rows-container {

@@ -12,14 +12,16 @@ import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
 import { MovieProvider } from "./contexts/moviecontext";
 import LiveRegion from "./components/LiveRegion";
+import Footer from "./components/Footer";
 
 function App() {
   return (
     <MovieProvider>
       <div className="app-container">
         <LiveRegion />
+        <a className="skip-link" href="#main-content">Skip to content</a>
         <Navbar />
-        <main className="main-content">
+        <main className="main-content" id="main-content">
           <div className="main-wrapper">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -34,6 +36,7 @@ function App() {
             </Routes>
           </div>
         </main>
+        <Footer />
       </div>
     </MovieProvider>
   );

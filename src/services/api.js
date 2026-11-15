@@ -1,21 +1,11 @@
 const BASE_URL = "/api/movies";
-const TMDB_BASE_URL = "https://api.themoviedb.org/3";
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const DEV_PROXY_URL = "/tmdb-proxy";
 
+// In dev: use /tmdb-proxy (Vite middleware) to avoid /api/ static file collision
+// In prod: use /api/movies (Vercel serverless function)
 const buildUrl = (path, params = {}) => {
-    if (import.meta.env.DEV) {
-        const url = new URL(`${TMDB_BASE_URL}${path}`);
-        url.searchParams.set("api_key", API_KEY);
-        Object.keys(params).forEach((key) => {
-            const val = params[key];
-            if (val !== undefined && val !== null && val !== "") {
-                url.searchParams.set(key, val);
-            }
-        });
-        return url.toString();
-    }
-
-    const url = new URL(window.location.origin + BASE_URL);
+    const proxyBase = import.meta.env.DEV ? DEV_PROXY_URL : BASE_URL;
+    const url = new URL(window.location.origin + proxyBase);
     url.searchParams.set("path", path);
     Object.keys(params).forEach((key) => {
         const val = params[key];
@@ -26,8 +16,8 @@ const buildUrl = (path, params = {}) => {
     return url.toString();
 };
 
-const fetchJson = async (url) => {
-    const res = await fetch(url);
+const fetchJson = async (url, options = {}) => {
+    const res = await fetch(url, options);
     if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Request failed ${res.status} ${res.statusText}`);
@@ -54,7 +44,7 @@ export const searchMovies = async (query, options = {}) => {
         language: options.language || undefined,
     };
     const url = buildUrl("/search/movie", params);
-    return fetchJson(url);
+    return fetchJson(url, { signal: options.signal });
 };
 
 export const getTrendingMovies = async (page = 1, mediaType = "movie") => {
@@ -67,17 +57,18 @@ export const getUpcomingMovies = async (page = 1) => {
     return fetchJson(url);
 };
 
-export const discoverMovies = async (filters = {}) => {
+export const discoverMovies = async (filters = {}, options = {}) => {
     const params = {
         page: filters.page || 1,
         with_genres: filters.genre || filters.with_genres,
         primary_release_year: filters.year || undefined,
         "vote_average.gte": filters.min_rating || undefined,
+        "vote_count.gte": filters.vote_count || (filters.sort_by === "vote_average.desc" ? 100 : undefined),
         with_original_language: filters.language || undefined,
         sort_by: filters.sort_by || "popularity.desc",
     };
     const url = buildUrl("/discover/movie", params);
-    return fetchJson(url);
+    return fetchJson(url, options);
 };
 
 export const getMovieDetails = async (movieId) => {
@@ -146,7 +137,7 @@ export const searchMulti = async (query, options = {}) => {
         include_adult: options.include_adult ? "true" : "false",
     };
     const url = buildUrl("/search/multi", params);
-    return fetchJson(url);
+    return fetchJson(url, { signal: options.signal });
 };
 
 export const searchPerson = async (query, options = {}) => {
@@ -156,7 +147,7 @@ export const searchPerson = async (query, options = {}) => {
         page: options.page || 1,
     };
     const url = buildUrl("/search/person", params);
-    return fetchJson(url);
+    return fetchJson(url, { signal: options.signal });
 };
 
 export const getPersonDetails = async (personId) => {

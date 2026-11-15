@@ -20,6 +20,19 @@
     box-shadow 0.4s ease;
 }
 
+.movie-card-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+
+.movie-card:focus-within {
+  z-index: 20;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
 /* Hover Lift Effect — no rotateX to avoid text distortion */
 .movie-card:hover {
   transform: translateY(-8px) scale(1.05);
@@ -112,6 +125,10 @@
   opacity: 1;
 }
 
+.movie-card:focus-within .movie-overlay {
+  opacity: 1;
+}
+
 /* =========================================
    MOVIE INFO TEXT — sits at bottom of card
    ========================================= */
@@ -161,6 +178,12 @@
   opacity: 1;
 }
 
+.movie-card:focus-within .movie-info h3,
+.movie-card:focus-within .movie-info p {
+  transform: translateY(0);
+  opacity: 1;
+}
+
 /* =========================================
    FAVORITE BUTTON
    ========================================= */
@@ -194,6 +217,12 @@
 }
 
 .movie-card:hover .favorite-btn {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.movie-card:focus-within .favorite-btn,
+.favorite-btn.active {
   opacity: 1;
   transform: scale(1) translateY(0);
 }
@@ -281,6 +310,11 @@
     transform: translateY(0);
     opacity: 1;
   }
+
+  .favorite-btn {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 /* Glow effect on hover */
@@ -342,4 +376,31 @@
 .movie-card:hover .movie-rating {
   opacity: 1;
   transform: translateY(0);
+}
+
+.movie-card:focus-within .movie-rating {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.movie-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .movie-card,
+  .movie-card::before,
+  .movie-card::after,
+  .movie-poster img,
+  .movie-overlay,
+  .movie-info h3,
+  .movie-info p,
+  .favorite-btn,
+  .favorite-btn .heart-icon {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -1,8 +1,6 @@
 export default async function handler(req, res) {
   const { path, ...params } = req.query;
 
-  console.log("API Function Called:", { path, params });
-
   if (!path) {
     console.error("Error: Missing path parameter");
     return res.status(400).json({ error: "Missing 'path' query parameter" });
@@ -27,8 +25,6 @@ export default async function handler(req, res) {
     Object.keys(params).forEach((key) => {
       url.searchParams.set(key, params[key]);
     });
-
-    console.log("Fetching from TMDB:", url.toString().replace(API_KEY, "HIDDEN"));
 
     const response = await fetch(url.toString(), {
         headers: {

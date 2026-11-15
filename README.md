@@ -43,23 +43,22 @@ This project uses The Movie Database (TMDB) API. Do not commit your API key into
 
 ```bash
 cp .env.example .env
-# then open .env and set VITE_TMDB_API_KEY
+# then open .env and set TMDB_API_KEY
 ```
 
 2. Add your TMDB API key to `.env`:
 
 ```
-VITE_TMDB_API_KEY=your_real_api_key_here
+TMDB_API_KEY=your_tmdb_api_key_here
 ```
 
-Vite exposes env variables that start with `VITE_` to the client; `src/services/api.js` reads `import.meta.env.VITE_TMDB_API_KEY`.
+The Vite development proxy and production serverless function read `TMDB_API_KEY` on the server. Do not prefix the key with `VITE_`, because that can expose it to browser code.
 
-3. For CI (GitHub Actions) set the API key as a repository secret (e.g. `VITE_TMDB_API_KEY`) and then expose it to the workflow as an env var when building, for example in `.github/workflows/deploy.yml` set:
+3. For deployment, set `TMDB_API_KEY` in the server-side environment (Vercel Project Settings > Environment Variables). Do not inject it into the client build.
 
 ```yaml
 env:
-	VITE_TMDB_API_KEY: ${{ secrets.VITE_TMDB_API_KEY }}
-	BASE_URL: ${{ env.BASE_URL }}
+	TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
 ```
 
 That ensures the production build can access the API key without committing it to the repo.

@@ -10,27 +10,31 @@ const MovieContext = createContext();
 export const useMovieContext = () => useContext(MovieContext);
 export const MovieProvider = ({ children }) => {
   const [favorites, setfavorites] = useState([]);
+  const [favoritesReady, setFavoritesReady] = useState(false);
   useEffect(() => {
     try {
       const storedfavs = localStorage.getItem("favorites");
       if (storedfavs) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setfavorites(JSON.parse(storedfavs));
+        const parsedFavorites = JSON.parse(storedfavs);
+        setfavorites(Array.isArray(parsedFavorites) ? parsedFavorites : []);
       }
     } catch (e) {
       console.warn("localStorage access denied for getting favorites:", e);
+    } finally {
+      setFavoritesReady(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!favoritesReady) return;
     try {
       localStorage.setItem("favorites", JSON.stringify(favorites));
     } catch (e) {
       console.warn("localStorage access denied for saving favorites:", e);
     }
-  }, [favorites]);
+  }, [favorites, favoritesReady]);
   const addtofavs = (movie) => {
-    setfavorites((prev) => [...prev, movie]);
+    setfavorites((prev) => prev.some((item) => item.id === movie.id) ? prev : [...prev, movie]);
   };
   const removefromfavs = (movieId) => {
     setfavorites((prev) => prev.filter((movie) => movie.id !== movieId));

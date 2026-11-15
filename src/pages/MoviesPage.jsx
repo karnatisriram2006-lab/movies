@@ -1,148 +1,147 @@
-import { useState, useEffect } from "react";
-import MovieCard from "../components/movieCard";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import VirtualizedMovieGrid from "../components/VirtualizedMovieGrid";
 import Hero from "../components/Hero";
 import { SkeletonHero } from "../components/SkeletonLoader";
-import "../css/Home.css";
+import useInfiniteDiscoverMovies from "../hooks/useInfiniteDiscoverMovies";
 import {
-  getPopularMovies,
-  getGenres,
-  discoverMovies
-} from "../services/api";
+  DEFAULT_MOVIE_SORT,
+  readMovieFilters,
+  toDiscoverFilters,
+  updateMovieFilterParams,
+} from "../hooks/movieFilters";
+import "../css/Home.css";
+import { getPopularMovies, getGenres } from "../services/api";
 
 const SORT_OPTIONS = [
   { value: "popularity.desc", label: "Popularity" },
-  { value: "vote_average.desc", label: "Rating" },
+  { value: "vote_average.desc", label: "Rating (100+ votes)" },
   { value: "release_date.desc", label: "Release Date" },
   { value: "revenue.desc", label: "Revenue" },
+  { value: "original_title.asc", label: "Title A-Z" },
+];
+
+const LANGUAGE_OPTIONS = [
+  ["en", "English"], ["hi", "Hindi"], ["ja", "Japanese"], ["ko", "Korean"],
+  ["fr", "French"], ["es", "Spanish"], ["ta", "Tamil"], ["te", "Telugu"],
 ];
 
 function MoviesPage() {
-  const [movies, setMovies] = useState([]);
   const [heroMovie, setHeroMovie] = useState(null);
   const [genres, setGenres] = useState([]);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedGenre, setSelectedGenre] = useState(null);
-  const [sortBy, setSortBy] = useState("popularity.desc");
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const filters = readMovieFilters(searchParams);
+  const {
+    movies,
+    page,
+    totalResults,
+    loading,
+    loadingMore,
+    hasMore,
+    error,
+    retry,
+    loadMore,
+    sentinelRef,
+  } = useInfiniteDiscoverMovies(toDiscoverFilters(filters));
 
   useEffect(() => {
-    const loadGenres = async () => {
-      try {
-        const data = await getGenres();
-        setGenres(data.genres || []);
-      } catch (err) {
-        console.error("Genres load error:", err);
-      }
-    };
-    loadGenres();
+    let cancelled = false;
+    Promise.allSettled([getPopularMovies(1), getGenres()]).then(([popularResult, genresResult]) => {
+      if (cancelled) return;
+      if (popularResult.status === "fulfilled") setHeroMovie(popularResult.value.results?.[0] || null);
+      if (genresResult.status === "fulfilled") setGenres(genresResult.value.genres || []);
+    });
+    return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    const loadMovies = async () => {
-      setLoading(true);
-      try {
-        const popularData = await getPopularMovies(1);
-        if (popularData.results?.length > 0) {
-          setHeroMovie(popularData.results[0]);
-        }
-      } catch (err) {
-        console.error("Movies load error:", err);
-        setError("Failed to load movies.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadMovies();
-  }, []);
+  const updateFilter = (key, value) => {
+    setSearchParams(updateMovieFilterParams(searchParams, { ...filters, [key]: value }), { replace: true });
+  };
 
-  useEffect(() => {
-    const loadFiltered = async () => {
-      setLoading(true);
-      try {
-        const data = await discoverMovies({ genre: selectedGenre, sort_by: sortBy, page });
-        setMovies(data.results || []);
-        setTotalPages(data.total_pages || 1);
-      } catch (err) {
-        console.error("Filter error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadFiltered();
-  }, [selectedGenre, sortBy, page]);
-
-  if (loading && !movies.length) return (
-    <div className="home-netflix loading">
-      <SkeletonHero />
-      <div className="filtered-results">
-        <div className="movies-grid">
-          {Array.from({ length: 12 }).map((_, i) => (
-            <div key={i} className="movie-card-skeleton"></div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  if (error) return (
-    <div className="error-screen">
-      <div className="error-content">
-        <h2>Service Unavailable</h2>
-        <p>{error}</p>
-        <button className="retry-btn" onClick={() => window.location.reload()}>
-          Refresh Page
-        </button>
-      </div>
-    </div>
-  );
+  const clearFilters = () => {
+    setSearchParams(updateMovieFilterParams(searchParams, {
+      genre: "", sortBy: DEFAULT_MOVIE_SORT, year: "", minRating: "", language: "",
+    }), { replace: true });
+  };
 
   return (
     <div className="home-netflix">
-      <Hero movie={heroMovie} />
-      
-      <div className="filters-bar">
-        <div className="filters-panel">
+      {heroMovie ? <Hero movie={heroMovie} /> : <div className="hero-placeholder"><SkeletonHero /></div>}
+
+      <div className="filters-bar movies-filters-bar">
+        <div className="filters-panel" id="movies-filters">
           <div className="filter-group">
-            <label htmlFor="genre-select">Genre:</label>
-            <select id="genre-select" value={selectedGenre || ""} onChange={(e) => { setSelectedGenre(e.target.value || null); setPage(1); }}>
-              <option value="">All Genres</option>
-              {genres.map((genre) => (
-                <option key={genre.id} value={genre.id}>{genre.name}</option>
-              ))}
+            <label htmlFor="movies-genre-select">Genre</label>
+            <select id="movies-genre-select" value={filters.genre} onChange={(event) => updateFilter("genre", event.target.value)}>
+              <option value="">All genres</option>
+              {genres.map((genre) => <option key={genre.id} value={genre.id}>{genre.name}</option>)}
             </select>
           </div>
-          
           <div className="filter-group">
-            <label htmlFor="sort-select">Sort By:</label>
-            <select id="sort-select" value={sortBy} onChange={(e) => { setSortBy(e.target.value); setPage(1); }}>
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
-              ))}
+            <label htmlFor="movies-sort-select">Sort by</label>
+            <select id="movies-sort-select" value={filters.sortBy} onChange={(event) => updateFilter("sortBy", event.target.value)}>
+              {SORT_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </div>
+          <div className="filter-group">
+            <label htmlFor="movies-year-filter">Release year</label>
+            <input id="movies-year-filter" type="number" min="1888" max={new Date().getFullYear() + 5} placeholder="Any year" value={filters.year} onChange={(event) => updateFilter("year", event.target.value)} />
+          </div>
+          <div className="filter-group">
+            <label htmlFor="movies-rating-filter">Minimum rating</label>
+            <input id="movies-rating-filter" type="number" min="0" max="10" step="0.5" placeholder="Any rating" value={filters.minRating} onChange={(event) => updateFilter("minRating", event.target.value)} />
+          </div>
+          <div className="filter-group">
+            <label htmlFor="movies-language-filter">Language</label>
+            <select id="movies-language-filter" value={filters.language} onChange={(event) => updateFilter("language", event.target.value)}>
+              <option value="">Any language</option>
+              {LANGUAGE_OPTIONS.map(([code, label]) => <option key={code} value={code}>{label}</option>)}
+            </select>
+          </div>
+          <button className="clear-filters-btn" onClick={clearFilters}>Clear filters</button>
         </div>
       </div>
 
-      <div className="filtered-results">
-        <h2 className="section-title">
-          {selectedGenre ? genres.find(g => g.id === parseInt(selectedGenre))?.name : "All Movies"}
-          <span className="result-count">({movies.length} of {totalPages * 20})</span>
-        </h2>
-        <div className="movies-grid">
-          {movies.map((movie) => (
-            <MovieCard key={movie.id} movie={movie} />
-          ))}
+      <div className="filtered-results" aria-busy={loading || loadingMore}>
+        <div className="filtered-heading-row">
+          <h2 className="section-title">
+            {filters.genre ? genres.find((genre) => genre.id === Number(filters.genre))?.name : (filters.year || filters.minRating || filters.language || filters.sortBy !== DEFAULT_MOVIE_SORT) ? "Filtered Movies" : "All Movies"}
+            <span className="result-count">({movies.length} of {totalResults})</span>
+          </h2>
+          <div className="active-filter-list" aria-label="Active filters">
+            {filters.genre && <button className="filter-chip" onClick={() => updateFilter("genre", "")}>Genre: {genres.find((genre) => genre.id === Number(filters.genre))?.name || "Selected"} ×</button>}
+            {filters.year && <button className="filter-chip" onClick={() => updateFilter("year", "")}>Year: {filters.year} ×</button>}
+            {filters.minRating && <button className="filter-chip" onClick={() => updateFilter("minRating", "")}>Rating: {filters.minRating}+ ×</button>}
+            {filters.language && <button className="filter-chip" onClick={() => updateFilter("language", "")}>Language: {filters.language.toUpperCase()} ×</button>}
+            {filters.sortBy !== DEFAULT_MOVIE_SORT && <button className="filter-chip" onClick={() => updateFilter("sortBy", DEFAULT_MOVIE_SORT)}>Sort: {SORT_OPTIONS.find((option) => option.value === filters.sortBy)?.label || filters.sortBy} ×</button>}
+          </div>
         </div>
-        
-        {totalPages > 1 && page < totalPages && (
+
+        {loading && !movies.length ? (
+          <div className="movies-grid" aria-label="Loading movies">
+            {Array.from({ length: 12 }, (_, index) => <div key={index} className="movie-card-skeleton" />)}
+          </div>
+        ) : (
+          <VirtualizedMovieGrid movies={movies} />
+        )}
+        <div ref={sentinelRef} aria-hidden="true" className="load-more-sentinel" />
+
+        {!loading && !movies.length && !error && <p className="results-status">No movies match these filters.</p>}
+        {error && (
+          <div className="results-error" role="alert">
+            <span>{error}</span>
+            <button className="retry-btn" onClick={retry}>Retry</button>
+          </div>
+        )}
+        {loadingMore && <p className="results-status" role="status">Loading more movies…</p>}
+        {hasMore && !error && (
           <div className="load-more-container">
-            <button className="load-more-btn" onClick={() => setPage(p => p + 1)} disabled={loading}>
-              {loading ? "Loading..." : "Load More"}
+            <button className="load-more-btn" onClick={loadMore} disabled={loading || loadingMore}>
+              {loadingMore ? "Loading…" : "Load More"}
             </button>
           </div>
         )}
+        {page >= 500 && <p className="results-status">You’ve reached the available page limit.</p>}
       </div>
     </div>
   );
